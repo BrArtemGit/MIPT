@@ -1,119 +1,246 @@
-import pygame
-import copy
+from flask import Flask, url_for, request, render_template
+
+app = Flask(__name__)
 
 
-class Board:
-    def __init__(self, width, height, left=10, top=10, cell_size=30):
-        self.width = width
-        self.height = height
-        self.board = [[0] * width for _ in range(height)]
-        self.left = 0
-        self.top = 0
-        self.cell_size = 0
-        self.set_view(left, top, cell_size)
-
-    def render(self, screen):
-        for y in range(self.height):
-            for x in range(self.width):
-                pygame.draw.rect(screen, pygame.Color(255, 255, 255),
-                                 (x * self.cell_size + self.left, y * self.cell_size + self.top,
-                                  self.cell_size, self.cell_size), 1)
-
-    def set_view(self, left, top, cell_size):
-        self.left = left
-        self.top = top
-        self.cell_size = cell_size
-
-    def on_click(self, cell):
-        pass
-
-    def get_cell(self, mouse_pos):
-        cell_x = (mouse_pos[0] - self.left) // self.cell_size
-        cell_y = (mouse_pos[1] - self.top) // self.cell_size
-        if cell_x < 0 or cell_x >= self.width or cell_y < 0 or cell_y >= self.height:
-            return None
-        return cell_x, cell_y
-
-    def get_click(self, mouse_pos):
-        cell = self.get_cell(mouse_pos)
-        if cell:
-            self.on_click(cell)
+@app.route('/')
+@app.route('/index')
+def index():
+    user = "Ученик Яндекс.Лицея"
+    return render_template('non.html', title='Домашняя страница',
+                           username=user)
 
 
-class Life(Board):
-    def __init__(self, width, height, left=10, top=10, cell_size=30):
-        super().__init__(width, height, left, top, cell_size)
-
-    def on_click(self, cell):
-        self.board[cell[1]][cell[0]] = (self.board[cell[1]][cell[0]] + 1) % 2
-
-    def render(self, screen):
-            for y in range(self.height):
-                for x in range(self.width):
-                    if self.board[y][x]:
-                        pygame.draw.rect(screen, pygame.Color("green"),
-                                         (x * self.cell_size + self.left, y * self.cell_size + self.top,
-                                          self.cell_size, self.cell_size))
-                    pygame.draw.rect(screen, pygame.Color(255, 255, 255),
-                                     (x * self.cell_size + self.left, y * self.cell_size + self.top,
-                                      self.cell_size, self.cell_size), 1)
-
-    def next_move(self):
-        tmp_board = copy.deepcopy(self.board)
-        for y in range(self.height):
-            for x in range(self.width):
-                s = 0
-                for dy in range(-1, 2):
-                    for dx in range(-1, 2):
-                        if x + dx < 0 or x + dx >= self.width or y + dy < 0 or y + dy >= self.height:
-                            continue
-                        s += self.board[y + dy][x + dx]
-                s -= self.board[y][x]
-                if s == 3:
-                    tmp_board[y][x] = 1
-                elif s < 2 or s > 3:
-                    tmp_board[y][x] = 0
-        self.board = copy.deepcopy(tmp_board)
+@app.route('/odd_even')
+def odd_even():
+    return render_template('odd_even.html', number=2)
 
 
-def main():
-    pygame.init()
-    size = 470, 470
-    screen = pygame.display.set_mode(size)
-    clock = pygame.time.Clock()
-    pygame.display.set_caption("Игра <<Жизнь>>")
-
-    board = Life(30, 30, 10, 10, 15)
-
-    time_on = False
-    ticks = 0
-    speed = 10
-
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                board.get_click(event.pos)
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE or event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:
-                time_on = not time_on
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 4:
-                speed += 1
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 5:
-                speed -= 1
-
-        screen.fill((0, 0, 0))
-        board.render(screen)
-        if ticks >= speed:
-            if time_on:
-                board.next_move()
-            ticks = 0
-        pygame.display.flip()
-        clock.tick(100)
-        ticks += 1
-    pygame.quit()
+@app.route("/promotion")
+def promotion():
+    lst = ["Человечество вырастает из детства.", "Человечеству мала одна планета.",
+           "Мы сделаем обитаемыми безжизненные пока планеты.",
+           "И начнем с Марса!", "Присоединяйся!"]
+    return '</br>'.join(lst)
 
 
-if __name__ == "__main__":
-    main()
+@app.route("/image_mars")
+def image_mars():
+    return '''
+    Жди нас, Марс!
+    </br>
+    <img src="/static/img/mars.png" alt="No image">
+    </br>
+    Вот она какая, красная планета.
+    '''
+
+
+@app.route("/promotion_image")
+def promotion_image():
+    return f'''<!doctype html>
+                    <html lang="en">
+                      <head>
+                        <form class="promotion_image" method="post">
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+                        <link rel="stylesheet" 
+                        href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" 
+                        integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" 
+                        crossorigin="anonymous">
+                        <link rel="stylesheet" type="text/css" href="{url_for('static', filename='css/style.css')}" />
+                        <title>Жди нас, Марс!</title>
+                      </head>
+                      <body>
+                        <h1>Жди нас, Марс!</h1>
+                        <img src="/static/img/mars.png" alt="No image">
+                        <div class="alert alert-primary" role="alert">
+                          Человечество вырастает из детства.
+                        </div>
+                        <div class="alert alert-success" role="alert">
+                          Человечеству мала одна планета.
+                        </div>
+                        <div class="alert alert-secondary" role="alert">
+                          Мы сделаем обитаемыми безжизненные пока планеты.
+                        </div>
+                        <div class="alert alert-warning" role="alert">
+                          И начнем с Марса!
+                        </div>
+                        <div class="alert alert-danger" role="alert">
+                          Присоединяйся!
+                        </div>
+                      </body>
+                    </html>'''
+
+
+@app.route('/form_sample', methods=['POST', 'GET'])
+def form_sample():
+    if request.method == 'GET':
+        return f'''<!doctype html>
+                        <html lang="en">
+                          <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+                            <link rel="stylesheet"
+                            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                            integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                            crossorigin="anonymous">
+                            <link rel="stylesheet" type="text/css" href="{url_for('static', filename='css/style.css')}" />
+                            <title>Пример формы</title>
+                          </head>
+                          <body>
+                            <h1>Форма для регистрации в суперсекретной системе</h1>
+                            <div>
+                                <form class="login_form" method="post">
+                                    <div class="form-group">
+                                    <div class="form-group">
+                                        <textarea placeholder="Ваше имя" class="form-control" id="about" rows="1" name="about"></textarea>
+                                        <textarea placeholder="Ваша Фамилия" class="form-control" id="about" rows="1" name="about"></textarea>
+                                        </br>
+                                        <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Введите адрес почты" name="email">
+                                    </div>
+                                        <label for="classSelect">Какое у вас образование?</label>
+                                        <select class="form-control" id="classSelect" name="class">
+                                          <option>Начальное общее</option>
+                                          <option>Основное общее</option>
+                                          <option>Среднее общее</option>
+                                          <option>Среднее профессиональное</option>
+                                          <option>Высшее I степени</option>
+                                          <option>Высшее II степени</option>
+                                          <option>Высшее III степени</option>
+                                        </select>
+                                     </div>
+                                    Какие у Вас есть профессии?
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" class="form-check-input" id="acceptRules" name="accept">
+                                        <label class="form-check-label" for="acceptRules">Инженер</label>
+                                    </div>
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" class="form-check-input" id="acceptRules" name="accept">
+                                        <label class="form-check-label" for="acceptRules">Дизайнер</label>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form-check">Укажите пол</label>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="sex" id="male" value="male" checked>
+                                          <label class="form-check-label" for="male">
+                                            Мужской
+                                          </label>
+                                        </div>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="sex" id="female" value="female">
+                                          <label class="form-check-label" for="female">
+                                            Женский
+                                          </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" class="form-check-input" id="acceptRules" name="accept">
+                                        <label class="form-check-label" for="acceptRules">Готов быть добровольцем</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Записаться</button>
+                                </form>
+                            </div>
+                          </body>
+                        </html>'''
+    elif request.method == 'POST':
+        print(request.form['email'])
+        print(request.form['password'])
+        print(request.form['class'])
+        print(request.form['file'])
+        print(request.form['about'])
+        print(request.form['accept'])
+        print(request.form['sex'])
+        return "Форма отправлена"
+
+
+@app.route('/form_samples', methods=['POST', 'GET'])
+def form_samples():
+    if request.method == 'GET':
+        return f'''<!doctype html>
+                        <html lang="en">
+                          <head>
+                            <meta charset="utf-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+                            <link rel="stylesheet"
+                            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+                            integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+                            crossorigin="anonymous">
+                            <link rel="stylesheet" type="text/css" href="{url_for('static', filename='css/style.css')}" />
+                            <title>Пример формы</title>
+                          </head>
+                          <body>
+                            <h1>Форма для регистрации в суперсекретной системе</h1>
+                            <div>
+                                <form class="login_form" method="post">
+                                    <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Введите адрес почты" name="email">
+                                    <input type="password" class="form-control" id="password" placeholder="Введите пароль" name="password">
+                                    <div class="form-group">
+                                        <label for="classSelect">В каком вы классе</label>
+                                        <select class="form-control" id="classSelect" name="class">
+                                          <option>7</option>
+                                          <option>8</option>
+                                          <option>9</option>
+                                          <option>10</option>
+                                          <option>11</option>
+                                        </select>
+                                     </div>
+                                    <div class="form-group">
+                                        <label for="about">Немного о себе</label>
+                                        <textarea class="form-control" id="about" rows="3" name="about"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="photo">Приложите фотографию</label>
+                                        <input type="file" class="form-control-file" id="photo" name="file">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="form-check">Укажите пол</label>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="sex" id="male" value="male" checked>
+                                          <label class="form-check-label" for="male">
+                                            Мужской
+                                          </label>
+                                        </div>
+                                        <div class="form-check">
+                                          <input class="form-check-input" type="radio" name="sex" id="female" value="female">
+                                          <label class="form-check-label" for="female">
+                                            Женский
+                                          </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group form-check">
+                                        <input type="checkbox" class="form-check-input" id="acceptRules" name="accept">
+                                        <label class="form-check-label" for="acceptRules">Готов быть добровольцем</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Записаться</button>
+                                </form>
+                            </div>
+                          </body>
+                        </html>'''
+    elif request.method == 'POST':
+        print(request.form['email'])
+        print(request.form['password'])
+        print(request.form['class'])
+        print(request.form['file'])
+        print(request.form['about'])
+        print(request.form['accept'])
+        print(request.form['sex'])
+        return "Форма отправлена"
+
+
+@app.route("/tester")
+def tester():
+    return f"""<!doctype html>
+                <html lang="en">
+                  <head>
+                    <meta charset="utf-8">
+                    <link rel="stylesheet" type="text/css" href="{url_for('static', filename='css/style.css')}" />
+                    <title>Привет, Яндекс!</title>
+                  </head>
+                  <body>
+                    <h1>Первая HTML-страница</h1>
+                  </body>
+                </html>"""
+
+
+if __name__ == '__main__':
+    app.run(port=8080, host='127.0.0.1')
