@@ -1,5 +1,5 @@
 from flask import Flask, url_for, request, render_template
-
+import json
 app = Flask(__name__)
 
 
@@ -14,6 +14,14 @@ def index():
 @app.route('/odd_even')
 def odd_even():
     return render_template('odd_even.html', number=2)
+
+
+@app.route('/news')
+def news():
+    with open("news.json", "rt", encoding="utf8") as f:
+        news_list = json.loads(f.read())
+    print(news_list)
+    return render_template('news.html', news=news_list)
 
 
 @app.route("/promotion")
