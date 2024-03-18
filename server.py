@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify
 import logging
 
+
 # создаём приложение
 # мы передаём __name__, в нём содержится информация,
 # в каком модуле мы находимся.
