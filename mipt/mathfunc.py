@@ -7,5 +7,3 @@ if __name__=='__main__':
     print('Вызов',__name__)
     print("Пример вызова функции cube(3) -", cube(3))
 
-
-	

@@ -1,3 +1,4 @@
+
 """ Функции для работы со строками """
 def second_index(text: str, line: str) -> [int, None]:
     """
