@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ title }}</title>
+    </head>
+    <body>
+    <h1>Размещение по каютам</h1>
+    <ul>
+        {% for user in user_list["users"] %}
+        <h5>{{ user }} - Каюта №{{ loop.index }} {% if loop.first %} - капитан корабля {% endif %}
+        </h5>
+        {% endfor %}
+    </ul>
+    </body>
+    </html>
+{% endblock %}
